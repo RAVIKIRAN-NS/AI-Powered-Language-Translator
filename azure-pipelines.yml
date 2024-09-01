@@ -1,0 +1,44 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x'
+    addToPath: true
+
+# Install dependencies
+- script: |
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+  displayName: 'Install dependencies'
+
+# Run your tests (Optional)
+# You can add your test commands here if you have any tests.
+- script: |
+    echo "Running tests..."
+    # Example: pytest
+  displayName: 'Run tests'
+
+# Build Docker image
+- task: Docker@2
+  inputs:
+    containerRegistry: '<Your-Azure-Container-Registry-Service-Connection>'
+    repository: 'ai-powered-language-translator'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
+    tags: |
+      $(Build.BuildId)
+
+# Deploy to Azure Web App for Containers (Optional)
+# Uncomment the following section if you wish to deploy automatically after building
+# - task: AzureWebApp@1
+#   inputs:
+#     azureSubscription: '<Your-Azure-Subscription>'
+#     appName: '<Your-App-Service-Name>'
+#     imageName: '<Your-Container-Registry-Name>.azurecr.io/ai-powered-language-translator:$(Build.BuildId)'
+#     startupCommand: ''
+
